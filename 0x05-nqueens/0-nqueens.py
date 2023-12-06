@@ -2,70 +2,67 @@
 """
 Solution to the nqueens problem
 """
-
 import sys
 
-def is_safe(board, row, col, n):
-    # Check if there is a queen in the same row on the left
-    for i in range(col):
-        if board[row][i] == 1:
-            return False
 
-    # Check if there is a queen in the upper diagonal on the left
-    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
-        if board[i][j] == 1:
-            return False
-
-    # Check if there is a queen in the lower diagonal on the left
-    for i, j in zip(range(row, n, 1), range(col, -1, -1)):
-        if board[i][j] == 1:
-            return False
-
-    return True
-
-def solve_nqueens_util(board, col, n):
-    if col == n:
-        # Found a solution, print it
-        for i in range(n):
-            print("[{}, {}]".format(i, board[i][col - 1]), end=" ")
-        print()
+def backtrack(r, n, cols, pos, neg, board):
+    """
+    backtrack function to find solution
+    """
+    if r == n:
+        res = []
+        for l in range(len(board)):
+            for k in range(len(board[l])):
+                if board[l][k] == 1:
+                    res.append([l, k])
+        print(res)
         return
 
-    for i in range(n):
-        if is_safe(board, i, col, n):
-            # Place queen and move to the next column
-            board[i][col] = 1
-            solve_nqueens_util(board, col + 1, n)
-            # Backtrack: remove the queen to explore other possibilities
-            board[i][col] = 0
+    for c in range(n):
+        if c in cols or (r + c) in pos or (r - c) in neg:
+            continue
 
-def solve_nqueens(n):
-    # Check if N is an integer greater or equal to 4
-    if not isinstance(n, int):
-        print("N must be a number")
-        sys.exit(1)
+        cols.add(c)
+        pos.add(r + c)
+        neg.add(r - c)
+        board[r][c] = 1
 
-    if n < 4:
-        print("N must be at least 4")
-        sys.exit(1)
+        backtrack(r+1, n, cols, pos, neg, board)
 
-    # Initialize the chessboard
-    board = [[0 for _ in range(n)] for _ in range(n)]
+        cols.remove(c)
+        pos.remove(r + c)
+        neg.remove(r - c)
+        board[r][c] = 0
 
-    # Start solving the N queens problem
-    solve_nqueens_util(board, 0, n)
+
+def nqueens(n):
+    """
+    Solution to nqueens problem
+    Args:
+        n (int): number of queens. Must be >= 4
+    Return:
+        List of lists representing coordinates of each
+        queen for all possible solutions
+    """
+    cols = set()
+    pos_diag = set()
+    neg_diag = set()
+    board = [[0] * n for i in range(n)]
+
+    backtrack(0, n, cols, pos_diag, neg_diag, board)
+
 
 if __name__ == "__main__":
-    # Check if the correct number of arguments is provided
-    if len(sys.argv) != 2:
-        print("Usage: {} N".format(sys.argv[0]))
+    n = sys.argv
+    if len(n) != 2:
+        print("Usage: nqueens N")
         sys.exit(1)
-
-    # Extract N from command line arguments
     try:
-        N = int(sys.argv[1])
+        nn = int(n[1])
+        if nn < 4:
+            print("N must be at least 4")
+            sys.exit(1)
+        nqueens(nn)
     except ValueError:
         print("N must be a number")
         sys.exit(1)
-
-    solve_nqueens(N)
